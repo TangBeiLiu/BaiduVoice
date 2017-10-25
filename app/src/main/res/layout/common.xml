@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="fill_parent"
+              xmlns:app="http://schemas.android.com/apk/res-auto"
+              android:orientation="vertical"
+              android:layout_height="fill_parent">
+
+    <!--<TextView-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:textSize="18dp"-->
+        <!--android:padding="8dp"-->
+        <!--android:id="@+id/txtResult" />-->
+
+    <!--<View-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:background="#999"-->
+        <!--android:layout_height="1dp" />-->
+
+    <!--<ScrollView-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_above="@+id/btn"-->
+        <!--android:layout_weight="1"-->
+        <!--android:layout_height="match_parent">-->
+
+        <!--<TextView-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="match_parent"-->
+            <!--android:textSize="12dp"-->
+            <!--android:id="@+id/txtLog" />-->
+    <!--</ScrollView>-->
+
+
+    <!--<Button-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:text="@string/setting"-->
+        <!--android:id="@+id/setting"-->
+        <!--android:onClick="onClick"-->
+        <!--android:layout_alignParentBottom="true" />-->
+
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
+        app:title="@string/back"
+        android:background="@color/colorPrimary"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize">
+
+    </android.support.v7.widget.Toolbar>
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/recyclerView"
+        android:layout_width="match_parent"
+        android:layout_weight="1"
+        android:layout_height="0dp">
+    </android.support.v7.widget.RecyclerView>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <Button
+            android:layout_width="140dp"
+            android:layout_height="wrap_content"
+            android:text="@string/start"
+            android:id="@+id/btn"/>
+
+        <EditText
+            android:id="@+id/editText"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="match_parent"/>
+
+        <Button
+            android:id="@+id/send"
+            android:text="@string/send"
+            android:layout_width="60dp"
+            android:onClick="send"
+            android:layout_height="match_parent"/>
+
+    </LinearLayout>
+
+</LinearLayout>
