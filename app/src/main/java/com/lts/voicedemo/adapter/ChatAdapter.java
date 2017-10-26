@@ -33,6 +33,7 @@ public class ChatAdapter extends RecyclerView.Adapter {
     private List<Message> mData;
     private final LayoutInflater mInflater;
     private boolean mShowEmptyView = false;
+    private OnlongItemClickListener mOnlongItemClickListener;
 
     public ChatAdapter(Context context, List<Message> data) {
         this.mContext = context;
@@ -45,8 +46,8 @@ public class ChatAdapter extends RecyclerView.Adapter {
         notifyDataSetChanged();
     }
 
-    public void showEmptyView(boolean b) {
-        mShowEmptyView = b;
+    public void setOnLongItemClickListener(OnlongItemClickListener longItemClickListener){
+        this.mOnlongItemClickListener = longItemClickListener;
     }
 
     public void addMoreData(List<Message> data) {
@@ -102,7 +103,7 @@ public class ChatAdapter extends RecyclerView.Adapter {
         }
     }
 
-    static class MessageViewHolder extends RecyclerView.ViewHolder {
+    private class MessageViewHolder extends RecyclerView.ViewHolder {
         View mView;
         Context mContext;
 
@@ -114,13 +115,23 @@ public class ChatAdapter extends RecyclerView.Adapter {
 
         void bindinData(Message message) {
 
-            TextView content = (TextView) mView.findViewById(R.id.toContent);
-            content.setText(message.getMessage());
+            final TextView content = (TextView) mView.findViewById(R.id.toContent);
+            final String text = message.getMessage();
+            content.setText(text);
+            content.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    if (mOnlongItemClickListener != null) {
+                        mOnlongItemClickListener.onLongItemClickListener(text,content);
+                    }
+                    return true;
+                }
+            });
 
         }
     }
 
-    static class FromMessageViewHolder extends RecyclerView.ViewHolder {
+    private class FromMessageViewHolder extends RecyclerView.ViewHolder {
 
         Context mContext;
         View mView;
@@ -130,11 +141,21 @@ public class ChatAdapter extends RecyclerView.Adapter {
             this.mView = itemView;
         }
 
-        void bindinData(Message message) {
+        void bindinData( Message message) {
             CircleImageView fromIcon = (CircleImageView) mView.findViewById(R.id.fromicon);
-            TextView fromContent = (TextView) mView.findViewById(R.id.fromContent);
+            final TextView fromContent = (TextView) mView.findViewById(R.id.fromContent);
+            final String text = message.getMessage();
+            fromContent.setText(text);
 
-            fromContent.setText(message.getMessage());
+            fromContent.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    if (mOnlongItemClickListener != null) {
+                        mOnlongItemClickListener.onLongItemClickListener(text,fromContent);
+                    }
+                    return true;
+                }
+            });
 
         }
     }

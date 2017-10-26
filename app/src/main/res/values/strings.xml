@@ -65,6 +65,7 @@
     <string name="baidu_voice_deme">百度语言识别,点击屏幕开始</string>
     <string name="back">返回</string>
     <string name="send">发送</string>
+    <string name="play">播放</string>
     <string-array name="prop_list">
         <item>@string/prop_default</item>
         <item>10005, 热词（默认）</item>

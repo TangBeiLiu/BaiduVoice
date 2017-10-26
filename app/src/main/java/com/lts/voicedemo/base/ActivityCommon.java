@@ -15,6 +15,7 @@ import android.view.MenuItem;
 import android.widget.Button;
 
 import com.lts.voicedemo.R;
+import com.lts.voicedemo.control.MySyntherizer;
 import com.lts.voicedemo.util.InFileStream;
 import com.lts.voicedemo.util.Logger;
 
@@ -32,6 +33,9 @@ public abstract class ActivityCommon extends AppCompatActivity {
 //    protected TextView txtResult;
 
     protected Handler handler;
+
+    // 主控制类，所有合成控制方法从这个类开始
+    protected MySyntherizer synthesizer;
 
     protected String DESC_TEXT;
 
@@ -62,9 +66,12 @@ public abstract class ActivityCommon extends AppCompatActivity {
         Logger.setHandler(handler);
         initPermission();
         initRecog();
+        initialTts();
         initView();
         initToolbar();
     }
+
+
 
     void initToolbar(){
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -91,7 +98,7 @@ public abstract class ActivityCommon extends AppCompatActivity {
 
     protected abstract @LayoutRes int bindLayout();
     protected abstract void initView();
-
+    protected abstract void initialTts();
     protected abstract void initRecog();
 
     protected void handleMsg(Message msg) {

@@ -8,21 +8,34 @@ import android.support.design.widget.Snackbar;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
+import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.PopupWindow;
+import android.widget.TextView;
 
+import com.baidu.tts.client.SpeechSynthesizer;
+import com.baidu.tts.client.SpeechSynthesizerListener;
+import com.baidu.tts.client.TtsMode;
 import com.lts.voicedemo.ActivityOnline;
 import com.lts.voicedemo.MessageStatusRecogListener;
 import com.lts.voicedemo.R;
 import com.lts.voicedemo.StatusRecogListener;
 import com.lts.voicedemo.adapter.ChatAdapter;
+import com.lts.voicedemo.adapter.OnlongItemClickListener;
 import com.lts.voicedemo.constant.IStatus;
+import com.lts.voicedemo.control.InitConfig;
 import com.lts.voicedemo.control.MyRecognizer;
+import com.lts.voicedemo.control.NonBlockSyntherizer;
+import com.lts.voicedemo.control.UiMessageListener;
 import com.lts.voicedemo.offline.CommonRecogParams;
 import com.lts.voicedemo.offline.OfflineRecogParams;
+import com.lts.voicedemo.util.OfflineResource;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -38,7 +51,7 @@ import java.util.Map;
  * Created by fujiayi on 2017/6/20.
  */
 
-public abstract class ActivityRecog extends ActivityCommon implements IStatus {
+public abstract class ActivityRecog extends ActivityCommon implements IStatus, OnlongItemClickListener {
 
     /**
      * 识别控制器，使用MyRecognizer控制识别的流程
@@ -57,6 +70,20 @@ public abstract class ActivityRecog extends ActivityCommon implements IStatus {
      */
     protected boolean enableOffline = false;
 
+
+    protected String appId = "10280834";
+
+    protected String appKey = "e8AcjmMSCT88pYsIUoreZcfb";
+
+    protected String secretKey = "7398b24c25d3a171fd68d4d03b5ce5d5";
+
+    // TtsMode.MIX; 离在线融合，在线优先； TtsMode.ONLINE 纯在线； 没有纯离线
+    protected TtsMode ttsMode = TtsMode.MIX;
+
+
+    // 离线发音选择，VOICE_FEMALE即为离线女声发音。
+    // assets目录下bd_etts_speech_female.data为离线男声模型；bd_etts_speech_female.data为离线女声模型
+    protected String offlineVoice = OfflineResource.VOICE_MALE;
 
     /**
      * 控制UI按钮的状态
@@ -83,6 +110,45 @@ public abstract class ActivityRecog extends ActivityCommon implements IStatus {
         if (enableOffline) {
             myRecognizer.loadOfflineEngine(OfflineRecogParams.fetchOfflineParams());
         }
+    }
+
+    /**
+     * 初始化引擎，需要的参数均在InitConfig类里
+     * <p>
+     * DEMO中提供了3个SpeechSynthesizerListener的实现
+     * MessageListener 仅仅用log.i记录日志，在logcat中可以看见
+     * UiMessageListener 在MessageListener的基础上，对handler发送消息，实现UI的文字更新
+     * FileSaveListener 在UiMessageListener的基础上，使用 onSynthesizeDataArrived回调，获取音频流
+     */
+    @Override
+    protected void initialTts() {
+        SpeechSynthesizerListener listener = new UiMessageListener(handler);
+        Map<String, String> params = getParams();
+
+        // appId appKey secretKey 网站上您申请的应用获取。注意使用离线合成功能的话，需要应用中填写您app的包名。包名在build.gradle中获取。
+        InitConfig initConfig = new InitConfig(appId, appKey, secretKey, ttsMode, offlineVoice, params, listener);
+
+        synthesizer = new NonBlockSyntherizer(this, initConfig, handler); // 此处可以改为MySyntherizer 了解调用过程
+    }
+
+    /**
+     * 合成的参数，可以初始化时填写，也可以在合成前设置。
+     *
+     * @return
+     */
+    protected Map<String, String> getParams() {
+        Map<String, String> params = new HashMap<String, String>();
+        // 以下参数均为选填
+        params.put(SpeechSynthesizer.PARAM_SPEAKER, "0"); // 设置在线发声音人： 0 普通女声（默认） 1 普通男声 2 特别男声 3 情感男声<度逍遥> 4 情感儿童声<度丫丫>
+        params.put(SpeechSynthesizer.PARAM_VOLUME, "5"); // 设置合成的音量，0-9 ，默认 5
+        params.put(SpeechSynthesizer.PARAM_SPEED, "5");// 设置合成的语速，0-9 ，默认 5
+        params.put(SpeechSynthesizer.PARAM_PITCH, "5");// 设置合成的语调，0-9 ，默认 5
+        params.put(SpeechSynthesizer.PARAM_MIX_MODE, SpeechSynthesizer.MIX_MODE_DEFAULT);         // 该参数设置为TtsMode.MIX生效。即纯在线模式不生效。
+        // MIX_MODE_DEFAULT 默认 ，wifi状态下使用在线，非wifi离线。在线状态下，请求超时6s自动转离线
+        // MIX_MODE_HIGH_SPEED_SYNTHESIZE_WIFI wifi状态下使用在线，非wifi离线。在线状态下， 请求超时1.2s自动转离线
+        // MIX_MODE_HIGH_SPEED_NETWORK ， 3G 4G wifi状态下使用在线，其它状态离线。在线状态下，请求超时1.2s自动转离线
+        // MIX_MODE_HIGH_SPEED_SYNTHESIZE, 2G 3G 4G wifi状态下使用在线，其它状态离线。在线状态下，请求超时1.2s自动转离线
+        return params;
     }
 
     /**
@@ -140,7 +206,7 @@ public abstract class ActivityRecog extends ActivityCommon implements IStatus {
             mAdapter = new ChatAdapter(this, mDatas);
             mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
             mRecyclerView.setAdapter(mAdapter);
-
+            mAdapter.setOnLongItemClickListener(this);
             mEditText = (EditText) findViewById(R.id.editText);
 
         }
@@ -239,5 +305,23 @@ public abstract class ActivityRecog extends ActivityCommon implements IStatus {
 //                setting.setEnabled(false);
                 break;
         }
+    }
+
+    @Override
+    public void onLongItemClickListener(final String text, TextView textView) {
+        View inflate = LayoutInflater.from(this).inflate(R.layout.popupwindow_layout, null, false);
+        int[] location = new int[2];
+        textView.getLocationOnScreen(location);
+        final PopupWindow popupWindow = new PopupWindow(inflate, 300, 100, true);
+        popupWindow.showAtLocation(textView, Gravity.NO_GRAVITY,location[0],location[1]-106);
+        inflate.findViewById(R.id.play).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                synthesizer.speak(text);
+                popupWindow.dismiss();
+            }
+        });
+
+
     }
 }
