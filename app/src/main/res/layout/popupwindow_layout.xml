@@ -5,6 +5,7 @@
           android:background="@drawable/shape_bg"
           android:gravity="center"
           android:id="@+id/play"
+          android:textStyle="bold"
           android:orientation="vertical"
           android:text="@string/play"
           android:textColor="@color/white"

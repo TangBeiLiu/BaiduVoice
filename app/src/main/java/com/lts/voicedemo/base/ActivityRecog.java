@@ -28,6 +28,7 @@ import com.lts.voicedemo.adapter.OnlongItemClickListener;
 import com.lts.voicedemo.constant.IStatus;
 import com.lts.voicedemo.control.InitConfig;
 import com.lts.voicedemo.control.MyRecognizer;
+import com.lts.voicedemo.control.MySyntherizer;
 import com.lts.voicedemo.control.NonBlockSyntherizer;
 import com.lts.voicedemo.control.UiMessageListener;
 import com.lts.voicedemo.offline.CommonRecogParams;
@@ -40,6 +41,31 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * //
+ * //                       _oo0oo_
+ * //                      o8888888o
+ * //                      88" . "88
+ * //                      (| -_- |)
+ * //                      0\  =  /0
+ * //                    ___/`---'\___
+ * //                  .' \\|     |// '.
+ * //                 / \\|||  :  |||// \
+ * //                / _||||| -:- |||||- \
+ * //               |   | \\\  -  /// |   |
+ * //               | \_|  ''\---/''  |_/ |
+ * //               \  .-\__  '-'  ___/-. /
+ * //             ___'. .'  /--.--\  `. .'___
+ * //          ."" '<  `.___\_<|>_/___.' >' "".
+ * //         | | :  `- \`.;`\ _ /`;.`/ - ` : | |
+ * //         \  \ `_.   \_ __\ /__ _/   .-` /  /
+ * //     =====`-.____`.___ \_____/___.-`___.-'=====
+ * //                       `=---='
+ * //
+ * //
+ * //     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * //
+ * //            佛祖保佑         永无bug
+ * //
  * 识别的基类Activity。封装了识别的大部分逻辑，包括MyRecognizer的初始化，资源释放、
  * <p>
  * 大致流程为
@@ -57,6 +83,9 @@ public abstract class ActivityRecog extends ActivityCommon implements IStatus, O
      * 识别控制器，使用MyRecognizer控制识别的流程
      */
     protected MyRecognizer myRecognizer;
+
+    // 主控制类，所有合成控制方法从这个类开始
+    protected MySyntherizer synthesizer;
 
     private List<com.lts.voicedemo.bean.Message> mDatas = new ArrayList<>();
 
@@ -307,16 +336,25 @@ public abstract class ActivityRecog extends ActivityCommon implements IStatus, O
         }
     }
 
+    /**
+     * 长按消息弹出popupwindown,文字转声音的功能在此方法调用
+     * @param text 需要转换成音频的文本
+     * @param textView 文本控件
+     */
     @Override
     public void onLongItemClickListener(final String text, TextView textView) {
         View inflate = LayoutInflater.from(this).inflate(R.layout.popupwindow_layout, null, false);
         int[] location = new int[2];
+        //获取文本控件在屏幕的坐标
         textView.getLocationOnScreen(location);
-        final PopupWindow popupWindow = new PopupWindow(inflate, 300, 100, true);
-        popupWindow.showAtLocation(textView, Gravity.NO_GRAVITY,location[0],location[1]-106);
+        //只是demo不做适配了,直接用像素
+        final PopupWindow popupWindow = new PopupWindow(inflate, 200, 80, true);
+        //将popupwindown显示在文本控件的头部,所一减去popupwindown的高度,这里加6Pixel的间隙
+        popupWindow.showAtLocation(textView, Gravity.NO_GRAVITY,location[0],location[1]-86);
         inflate.findViewById(R.id.play).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                //转成语音并播放
                 synthesizer.speak(text);
                 popupWindow.dismiss();
             }

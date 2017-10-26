@@ -34,8 +34,7 @@ public abstract class ActivityCommon extends AppCompatActivity {
 
     protected Handler handler;
 
-    // 主控制类，所有合成控制方法从这个类开始
-    protected MySyntherizer synthesizer;
+
 
     protected String DESC_TEXT;
 
